@@ -107,3 +107,10 @@ def get_my_stories(current_user: str = Depends(get_current_user)):
         user = session.exec(select(User).where(User.username == current_user)).first()
         stories = session.exec(select(Story).where(Story.owner_id == user.id)).all()
     return stories
+
+@router.get("/datasets")
+def get_my_datasets(current_user: str = Depends(get_current_user)):
+    with Session(engine) as session:
+        user = session.exec(select(User).where(User.username == current_user)).first()
+        datasets = session.exec(select(Dataset).where(Dataset.owner_id == user.id)).all()
+    return datasets

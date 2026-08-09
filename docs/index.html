@@ -598,6 +598,25 @@ function uploadDataset(){
   .catch(()=>{ btn.disabled=false; btn.textContent="Upload dataset"; toast("Server is waking up, try again"); });
 }
 
+function loadDatasets(){
+  if(!token) return;
+  fetch(`${API}/datasets`, { headers: authHeader() })
+    .then(r => r.json())
+    .then(list => {
+      const el = document.getElementById('datasetList');
+      if(!Array.isArray(list) || list.length === 0){
+        el.innerHTML = '<div class="empty-note">Sign in and upload a CSV to begin. Your datasets will be listed here.</div>';
+        return;
+      }
+      el.innerHTML = "";
+      list.slice().reverse().forEach(d => {
+        addDatasetToList(d.id, d.filename, d.row_count, d.columns);
+      });
+    })
+    .catch(()=>{});
+}
+
+
 function addDatasetToList(id, filename, rows, columns){
   const list = document.getElementById('datasetList');
   if(list.querySelector('.empty-note')) list.innerHTML = "";
