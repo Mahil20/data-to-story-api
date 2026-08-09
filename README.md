@@ -1,3 +1,10 @@
+## Live Demo
+- Frontend: https://your-actual-netlify-url.netlify.app
+- API docs: https://data-to-story-api.onrender.com/docs
+
+Note: the backend is hosted on a free tier and may take 30-60 seconds to wake up on the first request after a period of inactivity.
+
+
 # Data-to-Story API
 
 An API that turns uploaded CSV data into AI-generated narrative insights, grounded in real calculated statistics.
