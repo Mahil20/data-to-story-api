@@ -9,6 +9,7 @@ import os
 from ai_story import generate_story
 from models import Story
 
+os.makedirs("uploads", exist_ok=True)
 router = APIRouter()
 
 @router.post("/datasets/upload")
