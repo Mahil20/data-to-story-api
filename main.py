@@ -4,13 +4,20 @@ from database import engine
 from models import User
 from routers import auth
 from routers import datasets
-
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-app.include_router(datasets.router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+app.include_router(datasets.router)
 app.include_router(auth.router)
+
 
 SQLModel.metadata.create_all(engine)
 
