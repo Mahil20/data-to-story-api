@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Data Ledger — Turn numbers into a story</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,450&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0D1B16;
+    --ink-soft:#152A22;
+    --ink-card:#1B332B;
+    --parchment:#F1E9D8;
+    --parchment-dim:#C9C0AC;
+    --brass:#C9A227;
+    --brass-dim:#8f7420;
+    --teal:#3E8A78;
+    --rust:#C15A34;
+    --line: rgba(241,233,216,0.14);
+    --line-strong: rgba(241,233,216,0.28);
+    --radius: 10px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(201,162,39,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(62,138,120,0.10), transparent 55%),
+      var(--ink);
+    color:var(--parchment);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--brass); color:var(--ink); }
+
+  a{color:inherit;}
+
+  .mono{ font-family:'JetBrains Mono',monospace; }
+  .serif{ font-family:'Fraunces',serif; }
+
+  /* ---------- Masthead ---------- */
+  .masthead{
+    max-width:1180px;
+    margin:0 auto;
+    padding:38px 28px 26px;
+    border-bottom:1px solid var(--line-strong);
+  }
+  .masthead-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .brand-eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--brass);
+  }
+  .brand-title{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-style:italic;
+    font-size:clamp(30px,4vw,42px);
+    margin:6px 0 0;
+    letter-spacing:-0.01em;
+  }
+  .brand-title .no{ color:var(--teal); font-style:normal;}
+  .masthead-meta{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--parchment-dim);
+    text-align:right;
+    line-height:1.6;
+  }
+  .tagline{
+    margin-top:14px;
+    max-width:560px;
+    color:var(--parchment-dim);
+    font-size:15px;
+    line-height:1.55;
+  }
+  .auth-strip{
+    margin-top:22px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  /* ---------- Buttons / inputs ---------- */
+  button{ font-family:'Inter',sans-serif; cursor:pointer; border:none; }
+  input{ font-family:'JetBrains Mono',monospace; }
+
+  .field{
+    background:var(--ink-soft);
+    border:1px solid var(--line);
+    border-radius:8px;
+    color:var(--parchment);
+    padding:9px 12px;
+    font-size:13px;
+    outline:none;
+    min-width:150px;
+  }
+  .field:focus{ border-color:var(--brass); }
+  .field::placeholder{ color:var(--parchment-dim); }
+
+  .btn{
+    border-radius:8px;
+    padding:9px 16px;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.01em;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .btn:active{ transform:translateY(1px); }
+  .btn:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+
+  .btn-brass{ background:var(--brass); color:var(--ink); }
+  .btn-brass:hover{ background:#dcb52e; box-shadow:0 0 0 4px rgba(201,162,39,0.16); }
+
+  .btn-ghost{ background:transparent; color:var(--parchment); border:1px solid var(--line-strong); }
+  .btn-ghost:hover{ border-color:var(--brass); color:var(--brass); }
+
+  .btn-teal{ background:var(--teal); color:#eafff8; }
+  .btn-teal:hover{ box-shadow:0 0 0 4px rgba(62,138,120,0.18); }
+
+  .btn-sm{ padding:6px 12px; font-size:12px; }
+  .btn[disabled]{ opacity:0.5; cursor:not-allowed; }
+
+  .status-pill{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    padding:6px 10px;
+    border-radius:20px;
+    border:1px solid var(--line-strong);
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .dot{ width:6px; height:6px; border-radius:50%; background:var(--parchment-dim); }
+  .dot.on{ background:var(--teal); box-shadow:0 0 6px var(--teal); }
+
+  /* ---------- Layout ---------- */
+  .desk{
+    max-width:1180px;
+    margin:0 auto;
+    padding:34px 28px 90px;
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:26px;
+    align-items:start;
+  }
+  @media (max-width:900px){
+    .desk{ grid-template-columns:1fr; }
+  }
+
+  .panel{
+    background:var(--ink-card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+  }
+  .panel + .panel{ margin-top:20px; }
+
+  .panel-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--brass);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .panel-label::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line-strong);
+  }
+
+  .stack{ display:flex; flex-direction:column; gap:10px; }
+  .row{ display:flex; gap:10px; }
+  .field.full{ width:100%; }
+
+  .hint{ font-size:12px; color:var(--parchment-dim); line-height:1.5; margin-top:2px;}
+
+  /* dataset list */
+  .dataset-item{
+    padding:12px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    margin-bottom:8px;
+    cursor:pointer;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .dataset-item:hover{ border-color:var(--brass); background:rgba(201,162,39,0.06); }
+  .dataset-item.active{ border-color:var(--brass); background:rgba(201,162,39,0.1); }
+  .dataset-item .fn{ font-weight:600; font-size:13.5px; }
+  .dataset-item .meta{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--parchment-dim); margin-top:4px; }
+
+  .empty-note{
+    font-size:12.5px;
+    color:var(--parchment-dim);
+    padding:14px;
+    border:1px dashed var(--line-strong);
+    border-radius:8px;
+    line-height:1.5;
+  }
+
+  /* ---------- Manuscript (main story area) ---------- */
+  .manuscript-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+  }
+  .manuscript-title{
+    font-family:'Fraunces',serif;
+    font-size:26px;
+    font-weight:450;
+  }
+  .manuscript-sub{ color:var(--parchment-dim); font-size:13px; margin-top:4px; }
+
+  .ledger-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+    margin-bottom:26px;
+  }
+  .ledger-cell{
+    background:var(--ink-soft);
+    padding:14px 14px;
+  }
+  .ledger-cell .k{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--teal);
+    margin-bottom:6px;
+  }
+  .ledger-cell .v{
+    font-family:'JetBrains Mono',monospace;
+    font-size:16px;
+    font-weight:700;
+    color:var(--parchment);
+  }
+  .ledger-cell .v .sub{ font-size:11px; color:var(--parchment-dim); font-weight:400; margin-left:4px;}
+
+  /* story + marginalia */
+  .story-wrap{
+    display:grid;
+    grid-template-columns:1fr 200px;
+    gap:24px;
+  }
+  @media (max-width:720px){
+    .story-wrap{ grid-template-columns:1fr; }
+    .margin-col{ order:2; }
+  }
+
+  .story-text{
+    font-family:'Fraunces',serif;
+    font-size:19px;
+    line-height:1.75;
+    color:var(--parchment);
+    font-weight:450;
+  }
+  .story-text::first-letter{
+    font-size:52px;
+    float:left;
+    line-height:0.8;
+    padding-right:8px;
+    padding-top:6px;
+    color:var(--brass);
+    font-weight:600;
+  }
+
+  .margin-col{
+    border-left:1px solid var(--line-strong);
+    padding-left:18px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .marginalia{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--teal);
+    line-height:1.5;
+    position:relative;
+  }
+  .marginalia .tag{
+    display:block;
+    color:var(--brass-dim);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    font-size:9.5px;
+    margin-bottom:3px;
+  }
+  .marginalia:before{
+    content:"—";
+    position:absolute;
+    left:-22px;
+    color:var(--line-strong);
+  }
+
+  .placeholder-story{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:14px;
+    padding:50px 10px;
+    color:var(--parchment-dim);
+  }
+  .placeholder-story .glyph{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-size:44px;
+    color:var(--line-strong);
+  }
+
+  .loading-line{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--brass);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .pulse{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--brass);
+    animation:pulse 1s infinite ease-in-out;
+  }
+  @keyframes pulse{ 0%,100%{opacity:.3;} 50%{opacity:1;} }
+
+  /* history */
+  .history-item{
+    padding:14px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    margin-bottom:10px;
+  }
+  .history-item .meta{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    color:var(--parchment-dim);
+    margin-bottom:6px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .history-item .txt{
+    font-family:'Fraunces',serif;
+    font-size:14.5px;
+    line-height:1.6;
+    color:var(--parchment-dim);
+  }
+
+  .toast{
+    position:fixed;
+    bottom:22px;
+    left:50%;
+    transform:translateX(-50%) translateY(10px);
+    background:var(--ink-card);
+    border:1px solid var(--brass);
+    color:var(--parchment);
+    padding:11px 18px;
+    border-radius:8px;
+    font-size:13px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;
+    z-index:50;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  footer{
+    text-align:center;
+    color:var(--parchment-dim);
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    padding:30px 20px 40px;
+    letter-spacing:0.04em;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-top">
+    <div>
+      <div class="brand-eyebrow">Est. today · Vol. I</div>
+      <h1 class="brand-title">The Data <span class="no">Ledger</span></h1>
+    </div>
+    <div class="masthead-meta" id="apiStatus">
+      api&nbsp;·&nbsp;<span id="apiHost">data-to-story-api.onrender.com</span><br>
+      <span class="status-pill"><span class="dot" id="apiDot"></span><span id="apiDotLabel">checking</span></span>
+    </div>
+  </div>
+  <p class="tagline">Upload a dataset. It is read, measured, and averaged — then written up as a short piece of prose, grounded strictly in the numbers computed from your file. Nothing in the story is invented.</p>
+
+  <div class="auth-strip" id="authStrip">
+    <input class="field" id="username" placeholder="username" autocomplete="username">
+    <input class="field" id="password" placeholder="password" type="password" autocomplete="current-password">
+    <button class="btn btn-brass" onclick="login()">Sign in</button>
+    <button class="btn btn-ghost" onclick="signup()">Create account</button>
+    <span id="authState" class="status-pill" style="display:none;">
+      <span class="dot on"></span><span id="authWho"></span>
+      <button class="btn btn-ghost btn-sm" style="margin-left:8px;padding:3px 8px;" onclick="logout()">sign out</button>
+    </span>
+  </div>
+</header>
+
+<main class="desk">
+
+  <!-- LEFT COLUMN -->
+  <div>
+    <div class="panel">
+      <div class="panel-label">Submit a file</div>
+      <div class="stack">
+        <input class="field full" type="file" id="csvFile" accept=".csv">
+        <button class="btn btn-brass" style="width:100%;" onclick="uploadDataset()" id="uploadBtn">Upload dataset</button>
+        <p class="hint">CSV only. Numeric columns are measured automatically — sums, means, ranges, and correlations between every pair.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Your datasets</div>
+      <div id="datasetList">
+        <div class="empty-note">Sign in and upload a CSV to begin. Your datasets will be listed here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div>
+    <div class="panel">
+      <div class="manuscript-head">
+        <div>
+          <div class="manuscript-title" id="mTitle">No dataset selected</div>
+          <div class="manuscript-sub" id="mSub">Choose a file on the left to see its measurements and story.</div>
+        </div>
+        <button class="btn btn-teal" id="storyBtn" onclick="tellStory()" disabled>Write the story</button>
+      </div>
+
+      <div id="ledgerGrid"></div>
+
+      <div id="storyArea">
+        <div class="placeholder-story">
+          <span class="glyph">&ldquo;</span>
+          <div>Once a dataset is selected and measured, its story will be composed here — every number in it traceable to the ledger above.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Past stories</div>
+      <div id="historyList">
+        <div class="empty-note">Nothing written yet.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>the data ledger — a small instrument for turning tables into sentences</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "https://data-to-story-api.onrender.com";
+let token = "";
+let currentUsername = "";
+let currentDatasetId = null;
+let currentDatasetName = "";
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ---------- API status ping ---------- */
+fetch(API + "/")
+  .then(r => r.ok ? setApiState(true) : setApiState(false))
+  .catch(() => setApiState(false));
+
+function setApiState(ok){
+  document.getElementById('apiDot').classList.toggle('on', ok);
+  document.getElementById('apiDotLabel').textContent = ok ? "online" : "waking up…";
+}
+
+/* ---------- Auth ---------- */
+function signup(){
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value;
+  if(!u || !p){ toast("Enter a username and password first"); return; }
+  fetch(`${API}/signup?username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`, { method:"POST" })
+    .then(r => r.json().then(data => ({ok:r.ok, data})))
+    .then(({ok, data}) => {
+      if(ok){ toast("Account created — now sign in"); }
+      else{ toast(data.detail || "Could not create account"); }
+    })
+    .catch(()=>toast("Server is waking up, try again in a few seconds"));
+}
+
+function login(){
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value;
+  if(!u || !p){ toast("Enter a username and password first"); return; }
+
+  const form = new URLSearchParams();
+  form.append("username", u);
+  form.append("password", p);
+
+  fetch(`${API}/login`, { method:"POST", body: form })
+    .then(r => r.json().then(data => ({ok:r.ok, data})))
+    .then(({ok, data}) => {
+      if(ok){
+        token = data.access_token;
+        currentUsername = u;
+        document.getElementById('authWho').textContent = u;
+        document.getElementById('authState').style.display = 'inline-flex';
+        toast("Signed in as " + u);
+        loadDatasets();
+        loadHistory();
+      } else {
+        toast(data.detail || "Login failed");
+      }
+    })
+    .catch(()=>toast("Server is waking up, try again in a few seconds"));
+}
+
+function logout(){
+  token = "";
+  currentUsername = "";
+  currentDatasetId = null;
+  document.getElementById('authState').style.display = 'none';
+  document.getElementById('datasetList').innerHTML = '<div class="empty-note">Sign in and upload a CSV to begin. Your datasets will be listed here.</div>';
+  document.getElementById('historyList').innerHTML = '<div class="empty-note">Nothing written yet.</div>';
+  resetManuscript();
+  toast("Signed out");
+}
+
+function authHeader(){
+  return { "Authorization": "Bearer " + token };
+}
+
+/* ---------- Datasets ---------- */
+function uploadDataset(){
+  if(!token){ toast("Sign in first"); return; }
+  const fileInput = document.getElementById('csvFile');
+  if(!fileInput.files.length){ toast("Choose a CSV file first"); return; }
+
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true; btn.textContent = "Uploading…";
+  const chosenFilename = fileInput.files[0].name;
+
+  const formData = new FormData();
+  formData.append("file", fileInput.files[0]);
+
+  fetch(`${API}/datasets/upload`, {
+    method:"POST",
+    headers: authHeader(),
+    body: formData
+  })
+  .then(r => r.json().then(data => ({ok:r.ok, data})))
+  .then(({ok, data}) => {
+    btn.disabled = false; btn.textContent = "Upload dataset";
+    if(ok){
+      toast(`Uploaded — ${data.rows} rows read`);
+      fileInput.value = "";
+      addDatasetToList(data.dataset_id, chosenFilename, data.rows, data.columns);
+      selectDataset(data.dataset_id, chosenFilename);
+    } else {
+      toast(data.detail || "Upload failed");
+    }
+  })
+  .catch(()=>{ btn.disabled=false; btn.textContent="Upload dataset"; toast("Server is waking up, try again"); });
+}
+
+function addDatasetToList(id, filename, rows, columns){
+  const list = document.getElementById('datasetList');
+  if(list.querySelector('.empty-note')) list.innerHTML = "";
+  if(document.getElementById('ds-'+id)) return;
+  const div = document.createElement('div');
+  div.className = 'dataset-item';
+  div.id = 'ds-'+id;
+  div.onclick = () => selectDataset(id, filename);
+  div.innerHTML = `<div class="fn">${filename}</div><div class="meta">#${id} · ${rows} rows · ${columns.split(',').length} cols</div>`;
+  list.prepend(div);
+}
+
+function selectDataset(id, filename){
+  currentDatasetId = id;
+  currentDatasetName = filename;
+  document.querySelectorAll('.dataset-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('ds-'+id);
+  if(el) el.classList.add('active');
+
+  document.getElementById('mTitle').textContent = filename;
+  document.getElementById('mSub').textContent = "Measuring…";
+  document.getElementById('storyBtn').disabled = true;
+  document.getElementById('ledgerGrid').innerHTML = "";
+  resetManuscript();
+
+  fetch(`${API}/datasets/${id}/stats`, { headers: authHeader() })
+    .then(r => r.json().then(data => ({ok:r.ok, data})))
+    .then(({ok, data}) => {
+      if(!ok){ toast(data.detail || "Could not load stats"); return; }
+      renderLedger(data);
+      document.getElementById('mSub').textContent = `${data.row_count} rows measured · ready to write`;
+      document.getElementById('storyBtn').disabled = false;
+      window._lastStats = data;
+    })
+    .catch(()=>toast("Server is waking up, try again"));
+}
+
+function renderLedger(data){
+  const grid = document.getElementById('ledgerGrid');
+  grid.className = 'ledger-grid';
+  let html = "";
+  for(const col in data.stats){
+    const s = data.stats[col];
+    html += `<div class="ledger-cell">
+      <div class="k">${col}</div>
+      <div class="v">${s.mean}<span class="sub">avg</span></div>
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+/* ---------- Story ---------- */
+function resetManuscript(){
+  document.getElementById('storyArea').innerHTML = `
+    <div class="placeholder-story">
+      <span class="glyph">&ldquo;</span>
+      <div>Once a dataset is selected and measured, its story will be composed here — every number in it traceable to the ledger above.</div>
+    </div>`;
+}
+
+function tellStory(){
+  if(!currentDatasetId){ toast("Select a dataset first"); return; }
+  const btn = document.getElementById('storyBtn');
+  btn.disabled = true;
+  document.getElementById('storyArea').innerHTML = `<div class="loading-line"><span class="pulse"></span> composing, grounded in the ledger above…</div>`;
+
+  fetch(`${API}/datasets/${currentDatasetId}/story`, { headers: authHeader() })
+    .then(r => r.json().then(data => ({ok:r.ok, data})))
+    .then(({ok, data}) => {
+      btn.disabled = false;
+      if(!ok){ document.getElementById('storyArea').innerHTML = ''; toast(data.detail || "Could not write story"); return; }
+      renderStory(data.story);
+      loadHistory();
+    })
+    .catch(()=>{ btn.disabled=false; document.getElementById('storyArea').innerHTML=''; toast("Server is waking up, try again"); });
+}
+
+function renderStory(text){
+  const stats = window._lastStats;
+  let marginalia = "";
+  if(stats){
+    const cols = Object.keys(stats.stats).slice(0,3);
+    cols.forEach(c => {
+      const s = stats.stats[c];
+      marginalia += `<div class="marginalia"><span class="tag">${c}</span>mean ${s.mean} · range ${s.min}–${s.max}</div>`;
+    });
+    if(stats.correlations){
+      const keys = Object.keys(stats.correlations);
+      if(keys.length >= 2){
+        const a = keys[0], b = keys[1];
+        const val = stats.correlations[a] && stats.correlations[a][b];
+        if(val !== undefined){
+          marginalia += `<div class="marginalia"><span class="tag">correlation</span>${a} ↔ ${b}: ${val}</div>`;
+        }
+      }
+    }
+  }
+  document.getElementById('storyArea').innerHTML = `
+    <div class="story-wrap">
+      <div class="story-text">${text}</div>
+      <div class="margin-col">${marginalia || '<div class="marginalia">no annotations</div>'}</div>
+    </div>`;
+}
+
+/* ---------- History ---------- */
+function loadHistory(){
+  if(!token) return;
+  fetch(`${API}/stories`, { headers: authHeader() })
+    .then(r => r.json())
+    .then(list => {
+      const el = document.getElementById('historyList');
+      if(!Array.isArray(list) || list.length === 0){
+        el.innerHTML = '<div class="empty-note">Nothing written yet.</div>';
+        return;
+      }
+      el.innerHTML = list.slice().reverse().map(s => `
+        <div class="history-item">
+          <div class="meta"><span>dataset #${s.dataset_id}</span><span>${new Date(s.created_at).toLocaleString()}</span></div>
+          <div class="txt">${s.content.length > 220 ? s.content.slice(0,220) + '…' : s.content}</div>
+        </div>
+      `).join("");
+    })
+    .catch(()=>{});
+}
+
+/* When an upload succeeds, we don't get a full list back, but we know
+   the response — hook into uploadDataset's success by also adding to list there. */
+const _origUpload = uploadDataset;
+</script>
+</body>
+</html>
