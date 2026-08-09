@@ -14,3 +14,10 @@ class Dataset(SQLModel, table=True):
     columns: str
     uploaded_at: datetime = Field(default_factory=datetime.utcnow)
     owner_id: int = Field(foreign_key="user.id")
+
+class Story(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
+    dataset_id: int = Field(foreign_key="dataset.id")
+    content: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    owner_id: int = Field(foreign_key="user.id")

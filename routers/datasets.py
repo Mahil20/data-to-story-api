@@ -7,6 +7,7 @@ from sqlmodel import select
 import pandas as pd
 import os
 from ai_story import generate_story
+from models import Story
 
 router = APIRouter()
 
@@ -80,8 +81,28 @@ def get_dataset_stats(dataset_id: int, current_user: str = Depends(get_current_u
     }
 
 
+
 @router.get("/datasets/{dataset_id}/story")
 def get_dataset_story(dataset_id: int, current_user: str = Depends(get_current_user)):
     stats_response = get_dataset_stats(dataset_id, current_user)
-    story = generate_story(stats_response["stats"], stats_response["correlations"], stats_response["filename"])
-    return {"dataset_id": dataset_id, "story": story}
+    story_text = generate_story(stats_response["stats"], stats_response["correlations"], stats_response["filename"])
+
+    with Session(engine) as session:
+        user = session.exec(select(User).where(User.username == current_user)).first()
+        new_story = Story(
+            dataset_id=dataset_id,
+            content=story_text,
+            owner_id=user.id
+        )
+        session.add(new_story)
+        session.commit()
+        session.refresh(new_story)
+
+    return {"story_id": new_story.id, "dataset_id": dataset_id, "story": story_text}
+
+@router.get("/stories")
+def get_my_stories(current_user: str = Depends(get_current_user)):
+    with Session(engine) as session:
+        user = session.exec(select(User).where(User.username == current_user)).first()
+        stories = session.exec(select(Story).where(Story.owner_id == user.id)).all()
+    return stories
