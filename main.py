@@ -3,9 +3,12 @@ from sqlmodel import SQLModel
 from database import engine
 from models import User
 from routers import auth
+from routers import datasets
 
 
 app = FastAPI()
+
+app.include_router(datasets.router)
 
 app.include_router(auth.router)
 
