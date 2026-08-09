@@ -6,6 +6,7 @@ from auth import get_current_user
 from sqlmodel import select
 import pandas as pd
 import os
+from ai_story import generate_story
 
 router = APIRouter()
 
@@ -77,3 +78,10 @@ def get_dataset_stats(dataset_id: int, current_user: str = Depends(get_current_u
         "stats": stats,
         "correlations": correlations
     }
+
+
+@router.get("/datasets/{dataset_id}/story")
+def get_dataset_story(dataset_id: int, current_user: str = Depends(get_current_user)):
+    stats_response = get_dataset_stats(dataset_id, current_user)
+    story = generate_story(stats_response["stats"], stats_response["correlations"], stats_response["filename"])
+    return {"dataset_id": dataset_id, "story": story}
