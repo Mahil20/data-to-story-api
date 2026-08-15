@@ -1,6 +1,6 @@
 ## Live Demo
 - Frontend: https://your-actual-netlify-url.netlify.app
-- API docs: https://data-to-story-api.onrender.com/docs
+- API docs: https://data-to-story-api.netlify.app/
 
 Note: the backend is hosted on a free tier and may take 30-60 seconds to wake up on the first request after a period of inactivity.
 
